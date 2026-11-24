@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<title>IslamAI – ইসলাম ও নৈতিক শিক্ষা শিক্ষক</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#047857">
+<script src="app.js" defer></script>
+<style>
+:root{--bg:#f4faf7;--h1:#e2f5ec;--h2:#c6ebd9;--card:#fff;--ink:#142921;--mute:#526b61;--brand:#047857;--brand-ink:#fff;--bub:#ddf2e8;--line:#cde3d8;--fs:1}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1915;--h1:#133327;--h2:#0b2119;--card:#15241e;--ink:#e3f0ea;--mute:#8ca69b;--brand:#34d399;--brand-ink:#052117;--bub:#1a382c;--line:#264035;color-scheme:dark}}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans Bengali","Kalpurush",system-ui,sans-serif;display:flex;flex-direction:column;line-height:1.7}
+header,main,.bar{position:relative;z-index:1}
+.bgart{position:fixed;inset:0;width:100%;height:100%;z-index:0;color:var(--brand);opacity:.08;pointer-events:none}
+.hero{text-align:center;padding:20px 16px;background:linear-gradient(120deg,var(--h1),var(--h2));border-bottom:1px solid var(--line)}
+.hero h1{margin:0;font-size:clamp(1.5rem,4.2vw,2.2rem);line-height:1.25}.hero h1 b{color:var(--brand)}
+.hero p{margin:6px 0 0;font-size:.95rem;color:var(--mute)}
+.hero .tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:12px}
+.hero .tags span{background:var(--card);border:1px solid var(--line);border-radius:999px;font-size:.8rem;padding:3px 12px}
+#chat{flex:1;overflow-y:auto;padding:16px clamp(10px,3vw,28px);display:flex;flex-direction:column;gap:14px;max-width:1100px;width:100%;margin:0 auto}
+.msg{padding:10px 14px;border-radius:14px;font-size:calc(1rem*var(--fs));word-wrap:break-word;overflow-wrap:anywhere}
+.msg.u{align-self:flex-end;background:var(--brand);color:var(--brand-ink);max-width:80%}
+.msg.a{align-self:flex-start;background:var(--card);border:1px solid var(--line);width:100%;padding:18px clamp(14px,2.5vw,28px);font-size:calc(1.05rem*var(--fs));line-height:1.9}
+.msg.a.hint{width:auto}
+.msg.a>div.h{font-weight:700;color:var(--brand);margin-top:1em;font-size:1.06em}
+.msg.a>div.s{font-weight:700;margin-top:.7em}
+.msg.a>div.e{margin:.35em 0;padding:8px 14px;background:var(--bub);border-left:4px solid var(--brand);border-radius:8px;font-size:1.05em}
+.msg.a>div.l{padding-left:1.4em;position:relative}.msg.a>div.l::before{content:"•";position:absolute;left:.35em;color:var(--brand);font-weight:700}
+.msg.a>div.bk{height:.5em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{border:1px solid var(--line);background:var(--bub);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:.88rem;cursor:pointer}
+.tools{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+.tools button{min-height:38px;border:1px solid var(--brand);background:var(--bub);color:var(--ink);border-radius:10px;padding:0 14px;font:inherit;font-size:.88rem;cursor:pointer}
+.bar{border-top:1px solid var(--line);background:var(--card);padding:10px 12px}
+.sel,.row,.note,.pv{max-width:1100px;margin:0 auto}
+.sel{margin-bottom:8px;display:flex;gap:8px;align-items:center}
+select{flex:1;font:inherit;font-size:.88rem;padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-width:0;min-height:36px}
+.fs{display:flex;gap:6px}.fs button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;font:inherit;min-width:44px;min-height:36px;cursor:pointer}
+.lnk.hot{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border-radius:10px;background:#d32f2f;color:#fff;font-weight:700;text-decoration:none;font-size:.9rem;white-space:nowrap;animation:hot 1.4s ease-in-out infinite}
+@keyframes hot{0%,100%{box-shadow:0 0 0 0 rgba(211,47,47,.7);transform:scale(1)}50%{box-shadow:0 0 14px 6px rgba(211,47,47,.35);transform:scale(1.05)}}
+.row{display:flex;gap:8px;align-items:center}
+textarea{flex:1;font:inherit;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);resize:none;min-height:52px;max-height:140px;font-size:calc(1rem*var(--fs))}
+.cam{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;font-size:1.3rem;min-width:52px;min-height:52px;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.mic.on{background:#d32f2f;border-color:#d32f2f;color:#fff}
+button.send{border:0;background:var(--brand);color:var(--brand-ink);font-weight:700;cursor:pointer;width:52px;min-width:52px;min-height:52px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:1.35rem}
+button:disabled{opacity:.5}.pv{margin-bottom:8px;display:none;align-items:center;gap:8px}.pv img{height:56px;border-radius:8px}
+.note{margin-top:6px;color:var(--mute);font-size:.78rem;text-align:center}.msg img{display:block;max-width:180px;border-radius:8px;margin-bottom:6px}
+body.chatting .hero{padding:8px 16px}body.chatting .hero p,body.chatting .hero .tags{display:none}body.chatting .hero h1{font-size:1.15rem}
+@media print{.bgart,.bar,.hero,.tools{display:none}}
+</style>
+</head>
+<body>
+<svg class="bgart" aria-hidden="true"><defs><pattern id="islam" width="320" height="240" patternUnits="userSpaceOnUse">
+<text x="20" y="50" font-size="18" fill="currentColor">আকাইদ · ইবাদত</text>
+<text x="175" y="45" font-size="18" fill="currentColor">আল-কুরআন</text>
+<text x="35" y="130" font-size="18" fill="currentColor">তাওহিদ · রিসালাত</text>
+<text x="195" y="125" font-size="18" fill="currentColor">আখলাক</text>
+<text x="30" y="205" font-size="18" fill="currentColor">ইজমা · কিয়াস</text>
+<text x="185" y="200" font-size="18" fill="currentColor">সুন্নাহ</text>
+</pattern></defs><rect width="100%" height="100%" fill="url(#islam)"/></svg>
+
+<header class="hero">
+  <h1><b>IslamAI</b> – তোমার ইসলাম ও নৈতিক শিক্ষা শিক্ষক</h1>
+  <p>SSC (নবম–দশম) · NCTB পাঠ্যবই অনুসারে</p>
+  <div class="tags">
+    <span>📷 ছবি দিয়ে প্রশ্ন</span>
+    <span>📖 আয়াত ও হাদিসের ব্যাখ্যা</span>
+    <span>✍️ সৃজনশীল উত্তর</span>
+    <span>📝 ৩০টি MCQ বোর্ড টেস্ট</span>
+  </div>
+</header>
+
+<main id="chat">
+  <div class="msg a hint">
+    আসসালামু আলাইকুম! আমি তোমার ইসলাম ও নৈতিক শিক্ষা শিক্ষক। পাঠ্যবইয়ের যেকোনো প্রশ্ন, সূরা বা হাদিসের ব্যাখ্যা জানতে লেখো, আমি সহজ বাংলায় বুঝিয়ে দেব। 😊
+    <div class="chips">
+      <button class="chip" onclick="askSample('তাওহিদ কী? মানবজীবনে তাওহিদে বিশ্বাসের গুরুত্ব ব্যাখ্যা করো।')">তাওহিদের গুরুত্ব</button>
+      <button class="chip" onclick="askSample('শরিয়তের প্রধান চারটি উৎস কী কী? সংক্ষেপে বর্ণনা করো।')">শরিয়তের উৎস</button>
+      <button class="chip" onclick="askSample('আখলাকে হামিদাহ ও আখলাকে যামিমাহর মধ্যে পার্থক্য লেখো।')">আখলাকের প্রকারভেদ</button>
+    </div>
+  </div>
+</main>
+
+<div class="bar">
+  <div class="sel">
+    <div class="fs">
+      <button type="button" onclick="setFs(-0.1)">A−</button>
+      <button type="button" onclick="setFs(0.1)">A+</button>
+    </div>
+    <a href="test.html" class="lnk hot">📝 MCQ টেস্ট</a>
+    <select id="chap">
+      <option value="">অধ্যায় (ঐচ্ছিক)</option>
+      <option>১ম অধ্যায়: আকাইদ ও নৈতিক জীবন</option>
+      <option>২য় অধ্যায়: শরিয়তের উৎস</option>
+      <option>৩য় অধ্যায়: ইবাদত</option>
+      <option>৪র্থ অধ্যায়: আখলাক</option>
+      <option>৫ম অধ্যায়: আদর্শ জীবনচরিত</option>
+    </select>
+  </div>
+  <div class="pv" id="pv"><img id="pvImg" alt="Preview"><span>ছবি যুক্ত হয়েছে</span><button type="button" onclick="clearImg()">✕ সরাও</button></div>
+  <div class="row">
+    <input type="file" id="file" accept="image/*" hidden onchange="handleImg(this)">
+    <button type="button" class="cam" onclick="document.getElementById('file').click()">📷</button>
+    <textarea id="inp" rows="1" placeholder="ইসলাম ও নৈতিক শিক্ষা বিষয়ক প্রশ্ন লেখো বা বলো..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsg()}"></textarea>
+    <button type="button" class="cam mic" id="micBtn" onclick="toggleMic()">🎤</button>
+    <button type="button" class="send" id="sendBtn" onclick="sendMsg()">↑</button>
+  </div>
+  <div class="note">I can make mistakes. Please check before use.</div>
+</div>
+</body>
+</html>
