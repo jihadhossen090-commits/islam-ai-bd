@@ -26,7 +26,7 @@ h1{margin:0 0 6px;font-size:1.65rem}.sub{margin:0 0 18px;color:var(--mute);font-
 .timer-pill{background:var(--bub);border:1px solid var(--brand);color:var(--brand);padding:4px 12px;border-radius:999px;font-weight:700}
 .timer-pill.low{background:rgba(220,38,38,.15);border-color:var(--bad);color:var(--bad);animation:blink 1s infinite}
 @keyframes blink{50%{opacity:.55}}
-.qtext{font-weight:700;font-size:1.2rem;margin-bottom:18px;line-height:1.5}
+.qtext{font-weight:700;font-size:1.2rem;margin-bottom:18px;line-height:1.6;white-space:pre-line}
 .opts{display:flex;flex-direction:column;gap:10px}
 .opt{padding:13px 16px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;display:flex;align-items:center;gap:10px;font-size:1rem}
 .opt:hover{border-color:var(--brand)}.opt.correct{background:rgba(22,163,74,.14);border-color:var(--ok);color:var(--ok);font-weight:700}
@@ -38,7 +38,7 @@ h1{margin:0 0 6px;font-size:1.65rem}.sub{margin:0 0 18px;color:var(--mute);font-
 .btn.sec{background:var(--card);color:var(--ink);border:1px solid var(--line)}
 .res-big{font-size:2.1rem;font-weight:700;color:var(--brand);margin:6px 0}
 .wcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:12px}
-.wcard .wq{font-weight:700;margin-bottom:6px}.wcard .wa{color:var(--ok);font-weight:700;font-size:.92rem;margin-bottom:4px}.wcard .we{color:var(--mute);font-size:.88rem}
+.wcard .wq{font-weight:700;margin-bottom:6px;white-space:pre-line}.wcard .wa{color:var(--ok);font-weight:700;font-size:.92rem;margin-bottom:4px}.wcard .we{color:var(--mute);font-size:.88rem}
 .act-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 </style>
 </head>
@@ -48,7 +48,7 @@ h1{margin:0 0 6px;font-size:1.65rem}.sub{margin:0 0 18px;color:var(--mute);font-
   <div id="homeView">
     <a href="index.html" class="pill-btn">← প্রশ্ন করো</a>
     <h1>🕌 অধ্যায়ভিত্তিক বোর্ড MCQ টেস্ট (৩০ প্রশ্ন)</h1>
-    <p class="sub">বোর্ড পরীক্ষার নিয়ম অনুযায়ী প্রতিটি অধ্যায়ে ৩০টি প্রশ্ন এবং অটোমেটিক ৩০ মিনিট সময় পাবে।</p>
+    <p class="sub">বোর্ড পরীক্ষার নিয়ম অনুযায়ী প্রতিটি অধ্যায়ে ৩০টি প্রশ্ন (সাধারণ ও বহুপদী MCQ) এবং অটোমেটিক ৩০ মিনিট সময় পাবে।</p>
     <div class="tabs">
       <button class="tab active" id="tabBook" onclick="setMode('book')">📗 বইয়ের প্রশ্ন (৩০টি)</button>
       <button class="tab" id="tabAi" onclick="setMode('ai')">🤖 AI-নির্মিত প্রশ্ন (৩০টি)</button>
@@ -191,7 +191,7 @@ async function startChapter(idx) {
   document.getElementById('quizView').style.display = 'block';
   document.getElementById('questionArea').style.display = 'none';
   document.getElementById('loadingBox').style.display = 'block';
-  document.getElementById('loadingBox').textContent = `${ch.num}: ${ch.title} — NCTB পাঠ্যবইয়ের বিস্তারিত সোর্স থেকে ৩০টি নির্ভুল প্রশ্ন তৈরি হচ্ছে... ১০-২০ সেকেন্ড অপেক্ষা করো ⏳`;
+  document.getElementById('loadingBox').textContent = `${ch.num}: ${ch.title} — NCTB পাঠ্যবইয়ের বিস্তারিত সোর্স থেকে ৩০টি নির্ভুল প্রশ্ন (সাধারণ ও বহুপদী MCQ) তৈরি হচ্ছে... ১০-২০ সেকেন্ড অপেক্ষা করো ⏳`;
 
   const kwString = ch.keywords.join(', ');
   const src = mode === 'book'
@@ -202,7 +202,9 @@ async function startChapter(idx) {
 ১. শুধুমাত্র এবং কেবলমাত্র "${ch.num}: ${ch.title}" অধ্যায়ের (${src}) মূল পাঠ্যবইয়ের নির্ধারিত বিস্তারিত বিষয়বস্তু ও পারিভাষিক টার্ম (${kwString}) থেকে প্রশ্ন তৈরি করবে। অন্য কোনো অধ্যায়ের প্রশ্ন বা তথ্য মিশ্রণ করা কঠোরভাবে নিষিদ্ধ।
 ২. প্রশ্ন, অপশন এবং ব্যাখ্যা সম্পূর্ণ নির্ভুল হতে হবে এবং নবম-দশম শ্রেণির NCTB পাঠ্যবইয়ের প্রামাণ্য তথ্যের সাথে ১০০% মিল থাকতে হবে। কোনো ভুল তথ্য, ভুয়া অপশন বা বিভ্রান্তিকর ব্যাখ্যা দেওয়া যাবে না।
 ৩. এই অধ্যায় থেকে ঠিক এবং অবিকল ৩০টি (30) MCQ প্রশ্ন তৈরি করো।
-৪. শুধুমাত্র নিচের JSON ফরম্যাটে উত্তর দেবে, বাইরে কোনো কথা বা markdown লিখবে না:
+৪. ৩০টি প্রশ্নের মধ্যে ৫ থেকে ৭টি (5–7টি) প্রশ্ন অবশ্যই "বহুপদী সমাপ্তিসূচক MCQ" হতে হবে (যেমন: "নিচের কোন তথ্যগুলো সঠিক?" বা "নিচের কোনটি সঠিক?" দিয়ে i., ii., iii. পয়েন্ট থাকবে এবং অপশনগুলো হবে "i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii" ধরনের)। বাকি প্রশ্নগুলো সাধারণ একক MCQ হবে।
+৫. বহুপদী প্রশ্নের "q" ফিল্ডে মূল প্রশ্ন এবং i., ii., iii. পয়েন্টগুলো নতুন লাইন (\\n) দিয়ে সুন্দরভাবে সাজিয়ে লিখবে।
+৬. শুধুমাত্র নিচের JSON ফরম্যাটে উত্তর দেবে, বাইরে কোনো কথা বা markdown লিখবে না:
 [{"q":"প্রশ্ন","options":["ক","খ","গ","ঘ"],"ans":0,"exp":"পাঠ্যবইয়ের তথ্যের আলোকে সঠিক ও নির্ভুল ব্যাখ্যা"}]
 এখানে ans হলো সঠিক অপশনের ইনডেক্স (0, 1, 2 বা 3)।`;
 
