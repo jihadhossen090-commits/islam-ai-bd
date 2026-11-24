@@ -48,7 +48,7 @@ h1{margin:0 0 6px;font-size:1.65rem}.sub{margin:0 0 18px;color:var(--mute);font-
   <div id="homeView">
     <a href="index.html" class="pill-btn">← প্রশ্ন করো</a>
     <h1>🕌 অধ্যায়ভিত্তিক বোর্ড MCQ টেস্ট (৩০ প্রশ্ন)</h1>
-    <p class="sub">বোর্ড পরীক্ষার নিয়ম অনুযায়ী প্রতিটি অধ্যায়ে ৩০টি প্রশ্ন (সাধারণ ও বহুপদী MCQ) এবং অটোমেটিক ৩০ মিনিট সময় পাবে।</p>
+    <p class="sub">বোর্ড পরীক্ষার নিয়ম অনুযায়ী প্রতিটি অধ্যায়ে ৩০টি প্রশ্ন (২৪টি একক ও ৬টি বহুপদী MCQ) এবং অটোমেটিক ৩০ মিনিট সময় পাবে।</p>
     <div class="tabs">
       <button class="tab active" id="tabBook" onclick="setMode('book')">📗 বইয়ের প্রশ্ন (৩০টি)</button>
       <button class="tab" id="tabAi" onclick="setMode('ai')">🤖 AI-নির্মিত প্রশ্ন (৩০টি)</button>
@@ -181,25 +181,41 @@ function cleanText(str) {
     .trim();
 }
 
-function sanitizeQuestions(list, chapIdx) {
+function isMultiStatement(item) {
+  const combined = `${item.q} ${item.options.join(' ')}`;
+  return /\bi\.\s*/i.test(combined) && /\bii\.\s*/i.test(combined);
+}
+
+function balanceQuestions(list, chapIdx) {
   const currentChap = chapters[chapIdx];
   const cleaned = list
     .filter(item => item && typeof item.q === 'string' && Array.isArray(item.options) && item.options.length === 4)
-    .map(item => {
-      const q = cleanText(item.q);
-      const options = item.options.map(op => cleanText(op));
-      const exp = cleanText(item.exp || '');
-      const ans = Number.isInteger(item.ans) && item.ans >= 0 && item.ans <= 3 ? item.ans : 0;
-      return { q, options, ans, exp };
-    })
+    .map(item => ({
+      q: cleanText(item.q),
+      options: item.options.map(op => cleanText(op)),
+      ans: Number.isInteger(item.ans) && item.ans >= 0 && item.ans <= 3 ? item.ans : 0,
+      exp: cleanText(item.exp || '')
+    }))
     .filter(item => item.q.length > 0 && item.options.every(op => op.length > 0));
 
-  const matched = cleaned.filter(item => {
+  const multiPool = cleaned.filter(isMultiStatement);
+  const singlePool = cleaned.filter(item => !isMultiStatement(item));
+
+  const matchedSingle = singlePool.filter(item => {
     const text = `${item.q} ${item.options.join(' ')} ${item.exp}`;
     return currentChap.keywords.some(kw => text.includes(kw));
   });
 
-  return matched.length >= 5 ? matched.slice(0, 30) : cleaned.slice(0, 30);
+  const finalSingles = (matchedSingle.length >= 10 ? matchedSingle : singlePool).slice(0, 24);
+  const finalMultis = multiPool.slice(0, 6);
+
+  const combined = [...finalSingles];
+  finalMultis.forEach((mq, idx) => {
+    const insertAt = Math.min(combined.length, Math.floor(((idx + 1) * combined.length) / (finalMultis.length + 1)));
+    combined.splice(insertAt, 0, mq);
+  });
+
+  return combined.slice(0, 30);
 }
 
 async function startChapter(idx) {
@@ -211,7 +227,7 @@ async function startChapter(idx) {
   document.getElementById('quizView').style.display = 'block';
   document.getElementById('questionArea').style.display = 'none';
   document.getElementById('loadingBox').style.display = 'block';
-  document.getElementById('loadingBox').textContent = `${ch.num}: ${ch.title} — NCTB পাঠ্যবইয়ের বিস্তারিত সোর্স থেকে ৩০টি নির্ভুল প্রশ্ন (সাধারণ ও বহুপদী MCQ) তৈরি হচ্ছে... ১০-২০ সেকেন্ড অপেক্ষা করো ⏳`;
+  document.getElementById('loadingBox').textContent = `${ch.num}: ${ch.title} — NCTB পাঠ্যবইয়ের বিস্তারিত সোর্স থেকে ৩০টি নির্ভুল প্রশ্ন (২৪টি একক ও ৬টি বহুপদী MCQ) তৈরি হচ্ছে... ১০-২০ সেকেন্ড অপেক্ষা করো ⏳`;
 
   const kwString = ch.keywords.join(', ');
   const src = mode === 'book'
@@ -220,7 +236,7 @@ async function startChapter(idx) {
 
   const prompt = `তুমি একজন অত্যন্ত অভিজ্ঞ এবং কঠোর ইসলাম ও নৈতিক শিক্ষা শিক্ষক। নিচের নিয়মগুলো নিখুঁতভাবে মেনে চলো:
 ১. শুধুমাত্র এবং কেবলমাত্র "${ch.num}: ${ch.title}" অধ্যায়ের (${src}) মূল পাঠ্যবইয়ের নির্ধারিত বিস্তারিত বিষয়বস্তু ও পারিভাষিক টার্ম (${kwString}) থেকে প্রশ্ন তৈরি করবে। অন্য কোনো অধ্যায়ের প্রশ্ন বা তথ্য মিশ্রণ করা কঠোরভাবে নিষিদ্ধ।
-২. প্রশ্ন, অপশন এবং ব্যাখ্যা সম্পূর্ণ নির্ভুল হতে হবে এবং নবম-দশম শ্রেণির NCTB পাঠ্যবইয়ের প্রামাণ্য তথ্যের সাথে ১০০% মিল থাকতে হবে। কোনো ভুল তথ্য, ভাঙা অক্ষর (যেমন ), ভুয়া অপশন বা বিভ্রান্তিকর ব্যাখ্যা দেওয়া যাবে না।
+২. প্রশ্ন, অপশন এবং ব্যাখ্যা সম্পূর্ণ নির্ভুল হতে হবে এবং নবম-দশম শ্রেণির NCTB পাঠ্যবইয়ের প্রামাণ্য তথ্যের সাথে ১০০% মিল থাকতে হবে। কোনো ভুল তথ্য, ভাঙা অক্ষর, ভুয়া অপশন বা বিভ্রান্তিকর ব্যাখ্যা দেওয়া যাবে না।
 ৩. এই অধ্যায় থেকে ঠিক এবং অবিকল ৩০টি (30) MCQ প্রশ্ন তৈরি করো।
 ৪. ৩০টি প্রশ্নের মধ্যে ঠিক ৬টি (6টি) প্রশ্ন অবশ্যই "বহুপদী সমাপ্তিসূচক MCQ" হতে হবে। বহুপদী প্রশ্নে শুধু ৩টি রোমান পয়েন্ট থাকবে: "i.", "ii.", "iii." (কখনোই "iv." দেবে না) এবং অপশনগুলো হবে "i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii" ধরনের। বাকি ২৪টি প্রশ্ন সাধারণ একক MCQ হবে।
 ৫. বহুপদী প্রশ্নের "q" ফিল্ডে মূল প্রশ্ন এবং i., ii., iii. পয়েন্টগুলো নতুন লাইন (\\n) দিয়ে সুন্দরভাবে সাজিয়ে লিখবে (উদাহরণ: "নিচের কোন তথ্যগুলো সঠিক?\\ni. প্রথম তথ্য\\nii. দ্বিতীয় তথ্য\\niii. তৃতীয় তথ্য")।
@@ -238,7 +254,7 @@ async function startChapter(idx) {
     if (data.error) throw new Error(data.error);
     const raw = data.reply.replace(/```json|```/g, '').trim();
     let list = JSON.parse(raw.slice(raw.indexOf('['), raw.lastIndexOf(']') + 1));
-    list = sanitizeQuestions(list, idx);
+    list = balanceQuestions(list, idx);
     beginSession(list);
   } catch (e) {
     document.getElementById('loadingBox').textContent = '⚠️ সমস্যা হয়েছে: ' + e.message;
