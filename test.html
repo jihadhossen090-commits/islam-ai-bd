@@ -173,13 +173,33 @@ function updateTimerUI() {
   b.classList.toggle('low', timeLeft <= 60);
 }
 
-function strictFilterQuestions(list, chapIdx) {
+function cleanText(str) {
+  return String(str || '')
+    .replace(/\uFFFD+/g, '')
+    .replace(/(?:^|\n)\s*iv\.\s*[^\n]*/gi, '')
+    .replace(/\s*,?\s*ও\s*iv\b/gi, '')
+    .trim();
+}
+
+function sanitizeQuestions(list, chapIdx) {
   const currentChap = chapters[chapIdx];
-  const matched = list.filter(item => {
-    const text = `${item.q} ${item.options.join(' ')} ${item.exp || ''}`;
+  const cleaned = list
+    .filter(item => item && typeof item.q === 'string' && Array.isArray(item.options) && item.options.length === 4)
+    .map(item => {
+      const q = cleanText(item.q);
+      const options = item.options.map(op => cleanText(op));
+      const exp = cleanText(item.exp || '');
+      const ans = Number.isInteger(item.ans) && item.ans >= 0 && item.ans <= 3 ? item.ans : 0;
+      return { q, options, ans, exp };
+    })
+    .filter(item => item.q.length > 0 && item.options.every(op => op.length > 0));
+
+  const matched = cleaned.filter(item => {
+    const text = `${item.q} ${item.options.join(' ')} ${item.exp}`;
     return currentChap.keywords.some(kw => text.includes(kw));
   });
-  return matched.length >= 5 ? matched.slice(0, 30) : list.slice(0, 30);
+
+  return matched.length >= 5 ? matched.slice(0, 30) : cleaned.slice(0, 30);
 }
 
 async function startChapter(idx) {
@@ -200,10 +220,10 @@ async function startChapter(idx) {
 
   const prompt = `তুমি একজন অত্যন্ত অভিজ্ঞ এবং কঠোর ইসলাম ও নৈতিক শিক্ষা শিক্ষক। নিচের নিয়মগুলো নিখুঁতভাবে মেনে চলো:
 ১. শুধুমাত্র এবং কেবলমাত্র "${ch.num}: ${ch.title}" অধ্যায়ের (${src}) মূল পাঠ্যবইয়ের নির্ধারিত বিস্তারিত বিষয়বস্তু ও পারিভাষিক টার্ম (${kwString}) থেকে প্রশ্ন তৈরি করবে। অন্য কোনো অধ্যায়ের প্রশ্ন বা তথ্য মিশ্রণ করা কঠোরভাবে নিষিদ্ধ।
-২. প্রশ্ন, অপশন এবং ব্যাখ্যা সম্পূর্ণ নির্ভুল হতে হবে এবং নবম-দশম শ্রেণির NCTB পাঠ্যবইয়ের প্রামাণ্য তথ্যের সাথে ১০০% মিল থাকতে হবে। কোনো ভুল তথ্য, ভুয়া অপশন বা বিভ্রান্তিকর ব্যাখ্যা দেওয়া যাবে না।
+২. প্রশ্ন, অপশন এবং ব্যাখ্যা সম্পূর্ণ নির্ভুল হতে হবে এবং নবম-দশম শ্রেণির NCTB পাঠ্যবইয়ের প্রামাণ্য তথ্যের সাথে ১০০% মিল থাকতে হবে। কোনো ভুল তথ্য, ভাঙা অক্ষর (যেমন ), ভুয়া অপশন বা বিভ্রান্তিকর ব্যাখ্যা দেওয়া যাবে না।
 ৩. এই অধ্যায় থেকে ঠিক এবং অবিকল ৩০টি (30) MCQ প্রশ্ন তৈরি করো।
-৪. ৩০টি প্রশ্নের মধ্যে ৫ থেকে ৭টি (5–7টি) প্রশ্ন অবশ্যই "বহুপদী সমাপ্তিসূচক MCQ" হতে হবে (যেমন: "নিচের কোন তথ্যগুলো সঠিক?" বা "নিচের কোনটি সঠিক?" দিয়ে i., ii., iii. পয়েন্ট থাকবে এবং অপশনগুলো হবে "i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii" ধরনের)। বাকি প্রশ্নগুলো সাধারণ একক MCQ হবে।
-৫. বহুপদী প্রশ্নের "q" ফিল্ডে মূল প্রশ্ন এবং i., ii., iii. পয়েন্টগুলো নতুন লাইন (\\n) দিয়ে সুন্দরভাবে সাজিয়ে লিখবে।
+৪. ৩০টি প্রশ্নের মধ্যে ঠিক ৬টি (6টি) প্রশ্ন অবশ্যই "বহুপদী সমাপ্তিসূচক MCQ" হতে হবে। বহুপদী প্রশ্নে শুধু ৩টি রোমান পয়েন্ট থাকবে: "i.", "ii.", "iii." (কখনোই "iv." দেবে না) এবং অপশনগুলো হবে "i ও ii", "i ও iii", "ii ও iii", "i, ii ও iii" ধরনের। বাকি ২৪টি প্রশ্ন সাধারণ একক MCQ হবে।
+৫. বহুপদী প্রশ্নের "q" ফিল্ডে মূল প্রশ্ন এবং i., ii., iii. পয়েন্টগুলো নতুন লাইন (\\n) দিয়ে সুন্দরভাবে সাজিয়ে লিখবে (উদাহরণ: "নিচের কোন তথ্যগুলো সঠিক?\\ni. প্রথম তথ্য\\nii. দ্বিতীয় তথ্য\\niii. তৃতীয় তথ্য")।
 ৬. শুধুমাত্র নিচের JSON ফরম্যাটে উত্তর দেবে, বাইরে কোনো কথা বা markdown লিখবে না:
 [{"q":"প্রশ্ন","options":["ক","খ","গ","ঘ"],"ans":0,"exp":"পাঠ্যবইয়ের তথ্যের আলোকে সঠিক ও নির্ভুল ব্যাখ্যা"}]
 এখানে ans হলো সঠিক অপশনের ইনডেক্স (0, 1, 2 বা 3)।`;
@@ -218,7 +238,7 @@ async function startChapter(idx) {
     if (data.error) throw new Error(data.error);
     const raw = data.reply.replace(/```json|```/g, '').trim();
     let list = JSON.parse(raw.slice(raw.indexOf('['), raw.lastIndexOf(']') + 1));
-    list = strictFilterQuestions(list, idx);
+    list = sanitizeQuestions(list, idx);
     beginSession(list);
   } catch (e) {
     document.getElementById('loadingBox').textContent = '⚠️ সমস্যা হয়েছে: ' + e.message;
